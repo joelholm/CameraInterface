@@ -10,5 +10,16 @@
 #define PCH_H
 
 // TODO: add headers that you want to pre-compile here
+#include <Windows.h>
+#include <iostream>
+#include <string.h>
+#include <time.h>
+#include <tchar.h>
+#include "EDSDK.h"
+#include "EDSDKErrors.h"
+#include "EDSDKTypes.h"
+#include "MyCamController.h"
+using namespace std;
+
 
 #endif //PCH_H
