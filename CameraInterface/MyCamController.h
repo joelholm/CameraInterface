@@ -23,6 +23,6 @@ public:
 	void SetPath(EdsChar *path);
 	void CharReplace(EdsChar *string, EdsChar find, EdsChar replace);
 	int setProperties(EdsCameraRef camera);
-
+	int EnterLiveView(int duration, int fps);
 };
 

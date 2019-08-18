@@ -2,26 +2,12 @@
 //
 
 #include "pch.h"
-//
-//void AddBackslashes(EdsChar *string) {
-//	EdsChar curChar = string[0];
-//	int place = 0;
-//	//loop through string
-//	while (curChar != '\0') {
-//		//if a char matches find
-//		if (curChar == '\') {
-//			//replace it with replace
-//			string[place] = replace;
-//		}
-//		curChar = string[++place];
-//	}
-//}
-
 
 int main(int argc, char *argv[])
 {
 	cout << "Camera Interface" << endl;
-	cout << "1 - Take Photo\t 2 - Photo Loop\t 3 - Exit\t" << endl;
+	cout << "1 - Take Photo\t 2 - Live View\t" << endl;
+	cout << "0 - Exit" << endl;
 
 	EdsChar path[MAX_PATH_LENGTH];
 	if ( argc > 1 ) {
@@ -37,54 +23,29 @@ int main(int argc, char *argv[])
 	MyCamController mcc(path);
 
 	if (mcc.badSetup) {
+		Sleep(1000);
 		return -1;
 	}
 	
-	int inVal = 0;
+	int inVal = -1;
 	cout << "$ ";
 	cin >> inVal;
-	while (inVal != 3) {
+	while (inVal != 0) {
 		if (inVal == 1) {
 			mcc.TakePicture();
 		}
 		if (inVal == 2) {
-			int numP = 0, milliseconds = 0;
-			cout << "Number of photos ? ";
-			cin >> numP;
-			cout << "Every x milliseconds ? ";
-			cin >> milliseconds;
+			int dur = 0, fps = 0;
+			cout << "Duration in seconds ? ";
+			cin >> dur;
+			cout << "Frames per second ? ";
+			cin >> fps;
 
-			while (numP > 0) {
-				time_t begin = clock();
-				mcc.TakePicture();
-				time_t end = clock();
-				time_t diff = (end - begin) / (CLOCKS_PER_SEC / 1000);
-				cout << "that took " << diff << " milliseconds" << endl;
-				if (diff < milliseconds) {
-					Sleep(milliseconds - diff);
-				}
-				numP--;
-			}
+			mcc.EnterLiveView(dur, fps);
 		}
 		cout << "$ ";
 		cin >> inVal;
 	}
-
-
-	
-	//Picture loop on timer
-
-	//Maybe live view?
-
-
-	/*for( int i = 0; i < argc; i++) {
-		string cmdl = string(argv[i]);
-		cout << "Argument[" << i << "]: " << cmdl.c_str() << endl;
-	}*/
-
-	//Command line arguments
-	//1 -> Path to picture folder
-	//2 -> 
 
 }
 

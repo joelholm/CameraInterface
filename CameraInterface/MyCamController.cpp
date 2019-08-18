@@ -15,7 +15,7 @@ EdsError EDSCALLBACK handlePhotoTaken(EdsObjectEvent inEvent, EdsBaseRef inRef, 
 	EdsChar* fileName = new EdsChar[MAX_PATH_LENGTH];
 	mcc->GetFileName(fileName);
 
-	cout << fileName << endl;
+	cout << "Picture: " << fileName << endl;
 	error = EdsCreateFileStream(fileName, kEdsFileCreateDisposition_CreateAlways, kEdsAccess_ReadWrite, &stream);
 	if (error != EDS_ERR_OK) { cout << "ERROR: Couldn't create a new file stream -- " << error << endl; }
 	error = EdsDownload(inRef, photoInfo.size, stream);
@@ -152,5 +152,54 @@ int MyCamController::setProperties(EdsCameraRef camera) {
 		cout << "Error setting properites" << endl;
 		return -1;
 	}
+	return 0;
+}
+
+int MyCamController::EnterLiveView(int duration, int fps) {
+	//Live view setup
+	EdsError error = EDS_ERR_OK;
+	EdsUInt32 device; 
+	error = EdsGetPropertyData(camera, kEdsPropID_Evf_OutputDevice, 0, sizeof(device), &device);
+	device |= kEdsEvfOutputDevice_PC;
+	error = EdsSetPropertyData(camera, kEdsPropID_Evf_OutputDevice, 0, sizeof(device), &device);
+
+	//Link live view to a file
+	EdsStreamRef stream;
+	EdsEvfImageRef evfPic;
+	EdsChar* fileName = new EdsChar[MAX_PATH_LENGTH];
+	GetFileName(fileName);
+	error = EdsCreateFileStream(fileName, kEdsFileCreateDisposition_CreateAlways, kEdsAccess_ReadWrite, &stream);
+	if (error != EDS_ERR_OK) { cout << "ERROR: Couldn't create the file stream -- " << error << endl; }
+	error = EdsCreateEvfImageRef(stream, &evfPic);
+	if (error != EDS_ERR_OK) { cout << "ERROR: Couldn't create the live image ref -- " << error << endl; }
+
+	cout << "Live view: " << fileName << endl;
+
+	int in = 1;
+	time_t begin = clock();
+	time_t prev = begin;
+	int diff = 0;
+	while (diff < duration) {
+		error = EdsDownloadEvfImage(camera, evfPic);
+		if (error != EDS_ERR_OK) { cout << "ERROR: Couldn't download the live image -- " << error << endl; }
+
+		time_t now = clock();
+		int nowPrevDiff = (now - prev) / (CLOCKS_PER_SEC / 1000);
+		cout << "space - " << nowPrevDiff << endl;
+		if (nowPrevDiff < ( 1000 / fps )) {
+			Sleep( (1000 / fps) - nowPrevDiff);
+		}
+		prev = now;
+		diff = (now - begin) / (CLOCKS_PER_SEC);
+	}
+	
+
+	//Live view deconstruction
+	error = EdsGetPropertyData(camera, kEdsPropID_Evf_OutputDevice, 0, sizeof(device), &device);
+	device &= ~kEdsEvfOutputDevice_PC;
+	error = EdsSetPropertyData(camera, kEdsPropID_Evf_OutputDevice, 0, sizeof(device), &device);
+
+	EdsRelease(evfPic);
+	EdsRelease(stream);
 	return 0;
 }
